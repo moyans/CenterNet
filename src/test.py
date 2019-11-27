@@ -18,6 +18,8 @@ from logger import Logger
 from utils.utils import AverageMeter
 from datasets.dataset_factory import dataset_factory
 from detectors.detector_factory import detector_factory
+# import multiprocessing
+# multiprocessing.set_start_method('spawn',True)
 
 class PrefetchDataset(torch.utils.data.Dataset):
   def __init__(self, opt, dataset, pre_process_func):
@@ -59,7 +61,7 @@ def prefetch_test(opt):
   
   data_loader = torch.utils.data.DataLoader(
     PrefetchDataset(opt, dataset, detector.pre_process), 
-    batch_size=1, shuffle=False, num_workers=1, pin_memory=True)
+    batch_size=1, shuffle=False, num_workers=0, pin_memory=True)
 
   results = {}
   num_iters = len(dataset)
@@ -68,7 +70,8 @@ def prefetch_test(opt):
   avg_time_stats = {t: AverageMeter() for t in time_stats}
   for ind, (img_id, pre_processed_images) in enumerate(data_loader):
     ret = detector.run(pre_processed_images)
-    results[img_id.numpy().astype(np.int32)[0]] = ret['results']
+    results[img_id.numpy()[0]] = ret['results']
+    # results[img_id.numpy().astype(np.int32)[0]] = ret['results']
     Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
     for t in avg_time_stats:
@@ -108,6 +111,7 @@ def test(opt):
       ret = detector.run(img_path)
     
     results[img_id] = ret['results']
+    
 
     Bar.suffix = '[{0}/{1}]|Tot: {total:} |ETA: {eta:} '.format(
                    ind, num_iters, total=bar.elapsed_td, eta=bar.eta_td)
@@ -116,6 +120,7 @@ def test(opt):
       Bar.suffix = Bar.suffix + '|{} {:.3f} '.format(t, avg_time_stats[t].avg)
     bar.next()
   bar.finish()
+  
   dataset.run_eval(results, opt.save_dir)
 
 if __name__ == '__main__':

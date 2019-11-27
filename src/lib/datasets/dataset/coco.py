@@ -11,7 +11,7 @@ import os
 import torch.utils.data as data
 
 class COCO(data.Dataset):
-  num_classes = 2
+  num_classes = 1
   default_resolution = [512, 512]
   mean = np.array([0.40789654, 0.44719302, 0.47026115],
                    dtype=np.float32).reshape(1, 1, 3)
@@ -27,6 +27,10 @@ class COCO(data.Dataset):
     if split in ['val', 'test']:
       self.img_dir = os.path.join(self.data_dir, 'coco_SkuDet2019')
       self.annot_path = os.path.join(self.data_dir, 'annotations', 'instances_SkuDetData2019.json')
+
+      # self.img_dir = os.path.join(self.data_dir, 'coco_SkuDetDebug2019')
+      # self.annot_path = os.path.join(self.data_dir, 'annotations', 'instances_SkuDetDebug2019.json')
+
     elif split == 'train':
       self.img_dir = os.path.join(self.data_dir, 'coco_SkuDetTrainSetData2019')
       self.annot_path = os.path.join(self.data_dir, 'annotations', 'instances_SkuDetTrainSetData2019.json')
